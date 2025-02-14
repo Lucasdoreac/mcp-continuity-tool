@@ -1,0 +1,35 @@
+{
+  "projectInfo": {
+    "name": "Project Name",
+    "repository": "username/repo",
+    "lastUpdated": "YYYY-MM-DDTHH:mm:ssZ"
+  },
+  "development": {
+    "currentFile": "path/to/current/file.js",
+    "currentComponent": "ComponentName",
+    "inProgress": {
+      "type": "feature|bugfix|refactor",
+      "description": "Current task description",
+      "remainingTasks": []
+    }
+  },
+  "components": {
+    "completed": [],
+    "inProgress": [],
+    "pending": []
+  },
+  "context": {
+    "lastThought": "",
+    "nextSteps": [],
+    "dependencies": []
+  },
+  "mcpTools": {
+    "lastUsed": {
+      "repl": null,
+      "artifacts": [],
+      "searchResults": []
+    },
+    "cacheFiles": [],
+    "tempStorage": []
+  }
+}
