@@ -1,66 +1,81 @@
-# Prompts de Continuidade
+# Prompt de Continuidade MCP
 
-## Para Novo Chat (Continuação)
-
-Quando atingir o limite de contexto, use este prompt conciso no novo chat:
+## Prompt Otimizado
 
 ```
-Use MCP servers. Project: [URL_DO_REPOSITÓRIO]
-Status: [COLE_AQUI_O_STATUS_ATUAL]
-Branch: [BRANCH_ATUAL]
-Task: [TAREFA_ATUAL]
+Use MCP toolset from https://github.com/Lucasdoreac/mcp-continuity-tool for development continuity:
+
+Working on: [REPOSITÓRIO]
+Context: [CONTEXTO_ATUAL]
+Status from project-status.json:
+{
+  "projectInfo": {
+    "name": "[NOME_PROJETO]",
+    "currentTask": "[TAREFA_ATUAL]",
+    "lastState": "[ÚLTIMO_ESTADO]"
+  },
+  "development": {
+    "currentFile": "[ARQUIVO_ATUAL]",
+    "inProgress": "[PROGRESSO]"
+  }
+}
+
+Continue development from this state using MCP server tools for context preservation.
 ```
 
-### Por que é eficiente:
-- Instrução direta para usar MCP
-- Apenas informações essenciais
-- Sem redundâncias
-- Economia máxima de tokens
+## Por que é eficiente:
+1. Indica a fonte das ferramentas MCP
+2. Fornece o estado via project-status.json
+3. Mantém apenas informações essenciais
+4. Instrui explicitamente o uso das ferramentas de servidor
 
-### Exemplo:
-```
-Use MCP servers. Project: https://github.com/user/project
-Status: Implementing user authentication
-Branch: feature/auth
-Task: Add password reset functionality
-```
-
-## Para Desenvolvimento Contínuo
-
-Para manter contexto entre sessões longas:
+## Exemplo de Uso:
 
 ```
-Continue MCP development.
-Project: [URL_DO_REPOSITÓRIO]
-Last: [ÚLTIMA_AÇÃO]
-Next: [PRÓXIMO_PASSO]
+Use MCP toolset from https://github.com/Lucasdoreac/mcp-continuity-tool for development continuity:
+
+Working on: https://github.com/user/my-project
+Context: Implementing user authentication system
+Status from project-status.json:
+{
+  "projectInfo": {
+    "name": "MyProject",
+    "currentTask": "Add password reset",
+    "lastState": "Email verification complete"
+  },
+  "development": {
+    "currentFile": "src/auth/resetPassword.js",
+    "inProgress": "Implementing token validation"
+  }
+}
+
+Continue development from this state using MCP server tools for context preservation.
 ```
 
-### Exemplo:
-```
-Continue MCP development.
-Project: https://github.com/user/project
-Last: Implemented user model
-Next: Create authentication middleware
-```
+## Antes de Trocar de Chat:
 
-## Dicas de Uso
+1. Salve o estado atual no project-status.json
+2. Copie o prompt acima
+3. Preencha com informações atualizadas
+4. Use no novo chat
 
-1. **Mantenha Conciso**
-   - Evite descrições longas
-   - Foque no estado atual
-   - Use palavras-chave
+## Dicas de Uso:
 
-2. **Informações Críticas**
-   - URL do projeto
-   - Estado atual
-   - Próxima ação
+1. **Mantenha Status Atualizado**
+   - Atualize project-status.json antes de mudar de chat
+   - Inclua pontos de checkpoint importantes
+   - Mantenha histórico de decisões chave
+
+2. **Contexto Essencial**
+   - Arquivo atual sendo trabalhado
+   - Estado do desenvolvimento
+   - Próximos passos planejados
 
 3. **Economia de Tokens**
-   - Omita explicações óbvias
+   - Remova informações redundantes
+   - Mantenha apenas contexto relevante
    - Use formato consistente
-   - Mantenha apenas o essencial
 
 ---
 
-*Mantenha este documento atualizado com suas melhores práticas de continuidade.*
+*Atualize este template conforme sua experiência de uso.*
