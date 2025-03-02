@@ -1,10 +1,10 @@
 # Início Rápido - MCP Continuity Tool
 
-Este documento fornece um prompt pronto para usar que você pode copiar e colar diretamente para iniciar rapidamente com a ferramenta de continuidade MCP.
+Este documento fornece o prompt padrão para usar a ferramenta de continuidade MCP. Simplesmente copie, cole e comece a trabalhar!
 
-## Prompt para Copiar e Colar
+## Prompt Padrão (Copiar e Colar)
 
-Copie o texto abaixo e cole-o em um novo chat com Claude. Substitua apenas `seu-nome/seu-repositorio` pela identificação do seu repositório.
+Copie o texto abaixo e cole-o em um novo chat com Claude. **Apenas substitua `seu-nome/seu-repositorio` pelo identificador do seu repositório.**
 
 ```
 Use a ferramenta MCP de continuidade para desenvolvimento do repositório: seu-nome/seu-repositorio
@@ -33,54 +33,73 @@ Agora continue o desenvolvimento a partir do ponto atual:
 - Próximos passos: ${projectState.context.nextSteps.join(', ')}
 ```
 
-## O Que Acontece Quando Você Cola Este Prompt
+## Fluxo de Trabalho Padrão
 
-1. Claude carrega os scripts de gerenciamento de estado e configuração automática
-2. O script inicializa automaticamente o ambiente para seu repositório:
-   - Cria (ou carrega) o arquivo project-status.json
-   - Analisa a estrutura do repositório
-   - Identifica arquivos importantes
-   - Gera metadados do projeto
-3. O status atual é exibido para você confirmar
-4. Claude está pronto para continuar o desenvolvimento do ponto atual
+A ferramenta de continuidade MCP foi projetada para ser extremamente simples de usar:
 
-## Para Finalizar a Sessão
+### 1. Iniciar (Primeira Vez)
+- Cole o prompt acima em um novo chat com Claude
+- Substitua `seu-nome/seu-repositorio` pelo seu repositório
+- O sistema detectará automaticamente que é a primeira vez e criará o arquivo de estado
+- A estrutura de diretórios e arquivos será analisada
+- Um estado inicial será criado baseado na detecção automática
 
-Ao final da sessão, atualize o estado do projeto para uso na próxima sessão:
+### 2. Trabalhar no Projeto
+- Desenvolva normalmente seu projeto com Claude
+- O contexto é mantido durante toda a sessão
+- Use as ferramentas MCP conforme necessário
+
+### 3. Finalizar a Sessão
+- Antes de encerrar, atualize o estado:
 
 ```javascript
-// Atualiza o estado com o progresso atual
+// Atualize o estado com as mudanças da sessão
 await updateProjectState({
   development: {
-    currentFile: "nome-do-arquivo.js",  // Arquivo que você acabou de trabalhar
+    currentFile: "arquivo-que-está-trabalhando.js",
     inProgress: {
-      description: "Descrição do que você fez e onde parou"
+      description: "Descrição do que estava fazendo e onde parou"
     }
   },
   context: {
-    lastThought: "Seu pensamento final sobre o projeto",
+    lastThought: "Seus pensamentos finais sobre o projeto",
     nextSteps: ["Próximo passo 1", "Próximo passo 2"]
   }
 });
 
-// Gera prompt para a próxima sessão
-const updatedState = await loadProjectState('project-status.json');
-const nextSessionPrompt = generateContinuityPrompt(updatedState);
-console.log("Prompt para próxima sessão:");
+// Obtenha o prompt para a próxima sessão
+const nextSessionPrompt = generateContinuityPrompt(await loadProjectState('project-status.json'));
+console.log("Prompt para a próxima sessão:");
 console.log(nextSessionPrompt);
 ```
 
-## Personalização
+### 4. Próxima Sessão
+- Use o prompt gerado na etapa anterior, OU
+- Use o prompt padrão do início deste documento (o sistema carregará automaticamente o estado anterior)
 
-Você pode personalizar o prompt básico adicionando mais contexto ou instruções específicas:
+## Por Que Este Método é o Padrão
+
+O método de configuração automática se tornou o padrão porque:
+
+1. **Simplicidade** - Um único prompt resolve tudo
+2. **Eficiência** - Não requer configuração manual
+3. **Inteligência** - Detecta automaticamente a estrutura do projeto
+4. **Consistência** - Mantém o formato do estado padronizado
+5. **Velocidade** - Permite começar imediatamente em um novo chat
+
+## Personalizações
+
+Você pode personalizar o prompt padrão de várias maneiras:
+
+### Adicionar Contexto
 
 ```
 Use a ferramenta MCP de continuidade para desenvolvimento do repositório: seu-nome/seu-repositorio
 
-Contexto adicional:
-- Estamos implementando a funcionalidade X que precisa interagir com o sistema Y
-- Temos um prazo de entrega para o final da semana
-- A prioridade é otimizar o desempenho da função Z
+Contexto específico:
+- Objetivo principal: Implementar sistema de autenticação
+- Tecnologias utilizadas: React, Node.js, MongoDB
+- Prazo: Finalizar até sexta-feira
 
 1. Carregue e configure o ambiente de continuidade MCP:
 ```javascript
@@ -88,4 +107,17 @@ Contexto adicional:
 ```
 ```
 
-Para instruções completas, consulte [AUTO_SETUP.md](AUTO_SETUP.md).
+### Especificar Diretório de Trabalho
+
+Se seu projeto usa um diretório específico:
+
+```javascript
+// Inicializa automaticamente o ambiente para o repositório
+const repositoryUrl = "seu-nome/seu-repositorio";
+// Define o diretório de trabalho 
+const workingDirectory = "frontend/src";
+const env = await initializeEnvironment(repositoryUrl, workingDirectory);
+const projectState = env.projectState;
+```
+
+Para instruções completas e opções avançadas, consulte [AUTO_SETUP.md](AUTO_SETUP.md).
