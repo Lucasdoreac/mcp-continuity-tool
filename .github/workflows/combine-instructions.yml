@@ -1,0 +1,36 @@
+name: Combine Instructions
+
+on:
+  push:
+    paths:
+      - 'docs/INSTRUCTIONS_PART*.md'
+      - 'scripts/combine_instructions.js'
+  pull_request:
+    paths:
+      - 'docs/INSTRUCTIONS_PART*.md'
+      - 'scripts/combine_instructions.js'
+  workflow_dispatch:
+
+jobs:
+  combine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install fs-extra
+
+      - name: Combine instructions
+        run: |
+          node .github/scripts/run_combine.js
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: Atualizar INSTRUCTIONS.md com partes combinadas"
+          file_pattern: 'docs/INSTRUCTIONS.md'

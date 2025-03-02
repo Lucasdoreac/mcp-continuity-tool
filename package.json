@@ -1,0 +1,30 @@
+{
+  "name": "mcp-continuity-tool",
+  "version": "1.0.0",
+  "description": "A tool for maintaining context and continuity in MCP-based development across multiple chat sessions",
+  "main": "index.js",
+  "scripts": {
+    "combine": "node .github/scripts/run_combine.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lucasdoreac/mcp-continuity-tool.git"
+  },
+  "keywords": [
+    "mcp",
+    "continuity",
+    "context",
+    "ai",
+    "development"
+  ],
+  "author": "Lucas Dórea Cardoso",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lucasdoreac/mcp-continuity-tool/issues"
+  },
+  "homepage": "https://github.com/Lucasdoreac/mcp-continuity-tool#readme",
+  "dependencies": {
+    "fs-extra": "^11.2.0"
+  }
+}
