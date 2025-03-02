@@ -11,6 +11,7 @@ Uma ferramenta abrangente para implementar recursos de servidor Model Context Pr
 - Monitoramento de desempenho
 - Persistência de estado
 - Gerenciamento de artefatos
+- **NOVO:** Configuração automática de repositórios
 
 ## 🛠️ Ferramentas do Servidor
 
@@ -45,6 +46,12 @@ Uma ferramenta abrangente para implementar recursos de servidor Model Context Pr
    - Tracking de progresso
    - Templates JSON para estado do projeto
 
+6. **Configuração Automática**
+   - Detecção automática de arquivos e estrutura
+   - Preenchimento inteligente de metadados
+   - Inicialização com um único prompt
+   - Análise automática de repositórios
+
 ## 📋 Como Usar
 
 ### Instalação
@@ -69,12 +76,39 @@ npm install
 cp templates/project-status.json seu-projeto/project-status.json
 ```
 
-2. **Manter continuidade entre sessões**
+2. **Configuração Automática (NOVO!)**
 
-Use o template de prompt fornecido em `docs/CONTINUITY_PROMPT.md` para
-manter a continuidade entre diferentes sessões de chat com o Claude.
+Inicie um novo chat com Claude e use o prompt de configuração automática:
 
-3. **Combinar arquivos de instruções**
+```
+Use a ferramenta MCP de continuidade para desenvolvimento do repositório: [REPOSITÓRIO].
+
+1. Carregue o gerenciador de estado e o script de auto-configuração:
+```javascript
+// Carrega o gerenciador de estado e script de auto-setup
+const stateManager = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/state_manager.js', { encoding: 'utf8' });
+eval(stateManager);
+const autoSetup = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/auto_setup.js', { encoding: 'utf8' });
+eval(autoSetup);
+
+// Inicializa o ambiente para o repositório específico
+const repositoryUrl = "[REPOSITÓRIO]";
+const setupResult = await initializeEnvironment(repositoryUrl);
+const projectState = setupResult.projectState;
+```
+```
+
+3. **Manter continuidade entre sessões**
+
+Use o prompt de continuidade gerado ao final da sessão, ou regenere com:
+
+```javascript
+const updatedState = await loadProjectState('project-status.json');
+const newPrompt = generateContinuityPrompt(updatedState);
+console.log(newPrompt);
+```
+
+4. **Combinar arquivos de instruções**
 
 ```bash
 # Via MCP
@@ -93,6 +127,7 @@ Contribuições são bem-vindas! Veja `docs/INSTRUCTIONS.md` para informações 
 - [Documentação Completa](docs/INSTRUCTIONS.md)
 - [Templates de Prompt](docs/PROMPT_TEMPLATE.md)
 - [Recursos e Referências](docs/RESOURCES.md)
+- [Configuração Automática](docs/AUTO_SETUP.md) **NOVO!**
 
 ## ⚙️ Automação
 
