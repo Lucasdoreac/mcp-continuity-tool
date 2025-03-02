@@ -2,6 +2,39 @@
 
 Uma ferramenta abrangente para implementar recursos de servidor Model Context Protocol (MCP), otimizando o gerenciamento de contexto e contagem de tokens em aplicações de IA.
 
+## Uso Rápido
+
+Copie e cole este prompt em um novo chat com Claude para começar imediatamente:
+
+```
+Use a ferramenta MCP de continuidade para desenvolvimento do repositório: seu-nome/seu-repositorio
+
+1. Carregue e configure o ambiente de continuidade MCP:
+```javascript
+// Carrega os scripts necessários
+const stateManager = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/state_manager.js', { encoding: 'utf8' });
+eval(stateManager);
+const autoSetup = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/auto_setup.js', { encoding: 'utf8' });
+eval(autoSetup);
+
+// Inicializa automaticamente o ambiente para o repositório
+const repositoryUrl = "seu-nome/seu-repositorio";
+const env = await initializeEnvironment(repositoryUrl);
+const projectState = env.projectState;
+
+// Mostra o status atual do projeto
+console.log(`Trabalhando em: ${projectState.development.currentFile}`);
+console.log(`Tarefa atual: ${projectState.development.inProgress.description}`);
+```
+
+Agora continue o desenvolvimento a partir do ponto atual:
+- Arquivo: ${projectState.development.currentFile}
+- Tarefa: ${projectState.development.inProgress.description}
+- Próximos passos: ${projectState.context.nextSteps.join(', ')}
+```
+
+*Substitua `seu-nome/seu-repositorio` pelo repositório que deseja trabalhar*
+
 ## 🚀 Recursos
 
 - Gerenciamento de contexto contínuo
@@ -11,7 +44,7 @@ Uma ferramenta abrangente para implementar recursos de servidor Model Context Pr
 - Monitoramento de desempenho
 - Persistência de estado
 - Gerenciamento de artefatos
-- **NOVO:** Configuração automática de repositórios
+- Configuração automática de repositórios
 
 ## 🛠️ Ferramentas do Servidor
 
@@ -52,71 +85,44 @@ Uma ferramenta abrangente para implementar recursos de servidor Model Context Pr
    - Inicialização com um único prompt
    - Análise automática de repositórios
 
-## 📋 Como Usar
+## 📋 Como Funciona
 
-### Instalação
+### Processo de Uso Padrão
 
-```bash
-# Clone o repositório
-git clone https://github.com/Lucasdoreac/mcp-continuity-tool.git
+1. **Iniciar uma nova sessão**
+   - Cole o prompt de início rápido em um novo chat
+   - Substitua o nome do repositório
+   - O ambiente será configurado automaticamente
 
-# Entre no diretório
-cd mcp-continuity-tool
+2. **Durante a sessão**
+   - Trabalhe normalmente no desenvolvimento
+   - O contexto é mantido automaticamente
+   - Use as ferramentas MCP conforme necessário
 
-# Instale as dependências
-npm install
-```
+3. **Finalizar a sessão**
+   - Atualize o estado com o progresso
+   ```javascript
+   await updateProjectState({
+     development: {
+       currentFile: "arquivo-atual.js",
+       inProgress: {
+         description: "O que você está fazendo agora"
+       }
+     },
+     context: {
+       lastThought: "Seus pensamentos finais",
+       nextSteps: ["Próximo passo 1", "Próximo passo 2"]
+     }
+   });
+   ```
+   - Gere o prompt para a próxima sessão
+   ```javascript
+   const nextSessionPrompt = generateContinuityPrompt(await loadProjectState('project-status.json'));
+   console.log(nextSessionPrompt);
+   ```
 
-### Uso Básico
-
-1. **Iniciar um novo projeto**
-
-```bash
-# Inicialize o project-status.json
-cp templates/project-status.json seu-projeto/project-status.json
-```
-
-2. **Configuração Automática (NOVO!)**
-
-Inicie um novo chat com Claude e use o prompt de configuração automática:
-
-```
-Use a ferramenta MCP de continuidade para desenvolvimento do repositório: [REPOSITÓRIO].
-
-1. Carregue o gerenciador de estado e o script de auto-configuração:
-```javascript
-// Carrega o gerenciador de estado e script de auto-setup
-const stateManager = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/state_manager.js', { encoding: 'utf8' });
-eval(stateManager);
-const autoSetup = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/auto_setup.js', { encoding: 'utf8' });
-eval(autoSetup);
-
-// Inicializa o ambiente para o repositório específico
-const repositoryUrl = "[REPOSITÓRIO]";
-const setupResult = await initializeEnvironment(repositoryUrl);
-const projectState = setupResult.projectState;
-```
-```
-
-3. **Manter continuidade entre sessões**
-
-Use o prompt de continuidade gerado ao final da sessão, ou regenere com:
-
-```javascript
-const updatedState = await loadProjectState('project-status.json');
-const newPrompt = generateContinuityPrompt(updatedState);
-console.log(newPrompt);
-```
-
-4. **Combinar arquivos de instruções**
-
-```bash
-# Via MCP
-await combineInstructions();
-
-# Via Node.js
-npm run combine
-```
+4. **Próxima sessão**
+   - Use o prompt gerado ou o prompt padrão
 
 ## 🤝 Contribuindo
 
@@ -124,10 +130,11 @@ Contribuições são bem-vindas! Veja `docs/INSTRUCTIONS.md` para informações 
 
 ## 📚 Recursos Adicionais
 
+- [Início Rápido](docs/QUICK_START.md)
+- [Configuração Automática](docs/AUTO_SETUP.md)
 - [Documentação Completa](docs/INSTRUCTIONS.md)
 - [Templates de Prompt](docs/PROMPT_TEMPLATE.md)
 - [Recursos e Referências](docs/RESOURCES.md)
-- [Configuração Automática](docs/AUTO_SETUP.md) **NOVO!**
 
 ## ⚙️ Automação
 
