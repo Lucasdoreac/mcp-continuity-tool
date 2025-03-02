@@ -9,31 +9,19 @@ Copie e cole este prompt em um novo chat com Claude para começar imediatamente:
 ```
 Use a ferramenta MCP de continuidade para desenvolvimento do repositório: seu-nome/seu-repositorio
 
-1. Carregue e configure o ambiente de continuidade MCP:
 ```javascript
-// Carrega os scripts necessários
 const stateManager = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/state_manager.js', { encoding: 'utf8' });
 eval(stateManager);
 const autoSetup = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/auto_setup.js', { encoding: 'utf8' });
 eval(autoSetup);
-
-// Inicializa automaticamente o ambiente para o repositório
-const repositoryUrl = "seu-nome/seu-repositorio";
-const env = await initializeEnvironment(repositoryUrl);
+const env = await initializeEnvironment("seu-nome/seu-repositorio");
 const projectState = env.projectState;
-
-// Mostra o status atual do projeto
-console.log(`Trabalhando em: ${projectState.development.currentFile}`);
-console.log(`Tarefa atual: ${projectState.development.inProgress.description}`);
 ```
 
-Agora continue o desenvolvimento a partir do ponto atual:
-- Arquivo: ${projectState.development.currentFile}
-- Tarefa: ${projectState.development.inProgress.description}
-- Próximos passos: ${projectState.context.nextSteps.join(', ')}
+Continue o desenvolvimento a partir do ponto atual.
 ```
 
-*Substitua `seu-nome/seu-repositorio` pelo repositório que deseja trabalhar*
+*Substitua `seu-nome/seu-repositorio` nas duas ocorrências pelo seu repositório.*
 
 ## 🚀 Recursos
 
@@ -90,7 +78,7 @@ Agora continue o desenvolvimento a partir do ponto atual:
 ### Processo de Uso Padrão
 
 1. **Iniciar uma nova sessão**
-   - Cole o prompt de início rápido em um novo chat
+   - Cole o [prompt mínimo](docs/MINIMAL_PROMPT.md) em um novo chat
    - Substitua o nome do repositório
    - O ambiente será configurado automaticamente
 
@@ -122,7 +110,7 @@ Agora continue o desenvolvimento a partir do ponto atual:
    ```
 
 4. **Próxima sessão**
-   - Use o prompt gerado ou o prompt padrão
+   - Use o prompt gerado ou o prompt mínimo
 
 ## 🤝 Contribuindo
 
@@ -130,11 +118,12 @@ Contribuições são bem-vindas! Veja `docs/INSTRUCTIONS.md` para informações 
 
 ## 📚 Recursos Adicionais
 
-- [Início Rápido](docs/QUICK_START.md)
-- [Configuração Automática](docs/AUTO_SETUP.md)
-- [Documentação Completa](docs/INSTRUCTIONS.md)
-- [Templates de Prompt](docs/PROMPT_TEMPLATE.md)
-- [Recursos e Referências](docs/RESOURCES.md)
+- [Prompt Mínimo](docs/MINIMAL_PROMPT.md) - A forma mais rápida e simples de começar
+- [Início Rápido](docs/QUICK_START.md) - Instruções detalhadas para iniciantes
+- [Configuração Automática](docs/AUTO_SETUP.md) - Detalhes técnicos da configuração automática
+- [Documentação Completa](docs/INSTRUCTIONS.md) - Guia completo de todas as funcionalidades
+- [Templates de Prompt](docs/PROMPT_TEMPLATE.md) - Prompts para diferentes situações
+- [Recursos e Referências](docs/RESOURCES.md) - Materiais adicionais
 
 ## ⚙️ Automação
 
