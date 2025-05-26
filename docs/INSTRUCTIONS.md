@@ -1,174 +1,383 @@
-# MCP Continuity Tool - Instruções Detalhadas
+# MCP Continuity Tool - Parte 1: Configuração e Instalação
 
-## Índice
-1. [Visão Geral](#visão-geral)
-2. [Configuração Inicial](#configuração-inicial)
-3. [Uso Diário](#uso-diário)
-4. [Comandos e Funções](#comandos-e-funções)
-5. [Melhores Práticas](#melhores-práticas)
-6. [Solução de Problemas](#solução-de-problemas)
+Esta primeira parte das instruções foca na configuração inicial e instalação do MCP Continuity Tool.
 
-## Visão Geral
+## 1. Requisitos
 
-O MCP Continuity Tool é projetado para manter contexto e continuidade em desenvolvimento usando MCP (Multi-Context Programming) através de múltiplas sessões de chat. Esta documentação fornece instruções detalhadas sobre como utilizar a ferramenta efetivamente.
+- Git instalado
+- Acesso a GitHub
+- Node.js (versão 14 ou superior)
+- Editor de código
 
-## Configuração Inicial
+## 2. Instalação
 
-### Para Novo Projeto
+### 2.1 Para Novo Projeto
 
 1. **Fork do Repositório**
    ```bash
-   # Clone o repositório após o fork
    git clone https://github.com/seu-usuario/mcp-continuity-tool.git
    cd mcp-continuity-tool
    ```
 
-2. **Configuração do project-status.json**
-   - Copie o template de `/templates/project-status.json`
-   - Preencha as informações do seu projeto:
-     ```json
-     {
-       "projectInfo": {
-         "name": "Seu Projeto",
-         "repository": "seu-usuario/seu-repo",
-         "lastUpdated": "2025-02-15T10:00:00Z"
-       }
-     }
-     ```
-
-3. **Estrutura de Diretórios Recomendada**
-   ```
-   /seu-projeto
-   ├── /src
-   │   └── ... (seus arquivos de código)
-   ├── project-status.json
-   └── README.md
+2. **Instalação de Dependências**
+   ```bash
+   npm install
    ```
 
-### Para Projeto Existente
-
-1. **Adicionar Arquivo de Status**
-   - Copie `project-status.json` para a raiz do seu projeto
-   - Configure conforme necessário
-
-2. **Integração com Workflow Existente**
-   - Adicione o arquivo ao controle de versão
-   - Atualize o README com instruções de uso
-
-## Uso Diário
-
-1. **Iniciando uma Nova Sessão**
-   - Ao iniciar chat com Claude, use:
+3. **Configuração Inicial**
+   - Copie o template de configuração:
+     ```bash
+     cp templates/project-status.json ./project-status.json
      ```
-     Por favor, acesse https://github.com/Lucasdoreac/mcp-continuity-tool e use as instruções para continuidade de desenvolvimento.
-     ```
-   - Forneça o link do seu repositório quando solicitado
+   - Edite conforme necessário
 
-2. **Durante o Desenvolvimento**
-   - O estado é mantido automaticamente
-   - Use comandos específicos para operações especiais
-   - Verifique o status atual quando necessário
+### 2.2 Para Projeto Existente
 
-3. **Finalizando uma Sessão**
-   - O estado é salvo automaticamente
-   - Commit das alterações no project-status.json
+1. **Adicionar como Submódulo** (Opcional)
+   ```bash
+   git submodule add https://github.com/Lucasdoreac/mcp-continuity-tool.git tools/mcp-continuity
+   ```
 
-## Comandos e Funções
+2. **Copiar Arquivos Necessários**
+   ```bash
+   cp tools/mcp-continuity/templates/project-status.json ./
+   ```
 
-### Funções Principais
+## 3. Estrutura de Arquivos
 
-1. **Inicialização**
+```
+/seu-projeto
+├── /src
+│   └── ... (arquivos do projeto)
+├── /tools (opcional)
+│   └── /mcp-continuity
+├── project-status.json
+└── README.md
+```
+
+## 4. Configuração do project-status.json
+
+```json
+{
+  "projectInfo": {
+    "name": "Nome do Projeto",
+    "repository": "usuario/repo",
+    "lastUpdated": "YYYY-MM-DDTHH:mm:ssZ"
+  },
+  "development": {
+    "currentFile": "",
+    "currentComponent": "",
+    "inProgress": {
+      "type": "feature",
+      "description": "",
+      "remainingTasks": []
+    }
+  }
+}
+```
+
+## 5. Verificação da Instalação
+
+1. **Teste Básico**
    ```javascript
+   // No chat com Claude
    const status = await initSession(repoUrl);
+   console.log('Estado:', status);
    ```
 
-2. **Gerenciamento de Estado**
-   ```javascript
-   // Salvar estado atual
-   await saveState();
-   
-   // Carregar estado
-   const state = await loadState();
+2. **Verificação de Arquivos**
+   - project-status.json presente
+   - Estrutura de diretórios correta
+   - Permissões adequadas
+
+## 6. Próximos Passos
+
+- Continue para a Parte 2 das instruções
+- Configure seu ambiente de desenvolvimento
+- Familiarize-se com os comandos básicos
+
+## 7. Solução de Problemas de Instalação
+
+### 7.1 Problemas Comuns
+
+1. **Erro de Permissão**
+   - Verifique permissões de diretório
+   - Use sudo se necessário (Linux/Mac)
+
+2. **Conflitos de Git**
+   - Reset do repositório local
+   - Verificar .gitignore
+
+3. **Erro no project-status.json**
+   - Validar formato JSON
+   - Verificar campos obrigatórios
+
+### 7.2 Suporte
+
+- Abra issues para problemas técnicos
+- Consulte a documentação completa
+- Verifique o FAQ no repositório
+
+## 8. Customização Inicial
+
+### 8.1 Configurações Recomendadas
+
+1. **Editor Config**
+   ```
+   root = true
+
+   [*]
+   indent_style = space
+   indent_size = 2
+   end_of_line = lf
+   charset = utf-8
    ```
 
-3. **Operações com Arquivos**
-   ```javascript
-   // Carregar múltiplos arquivos
-   const files = await read_multiple_files({
-     paths: ['src/**/*.js']
-   });
-   ```
+2. **Git Hooks** (Opcional)
+   - Pre-commit para validação
+   - Post-commit para atualizações
 
-### Ferramentas MCP
+### 8.2 Variáveis de Ambiente
 
-1. **REPL**
-   - Use para testes rápidos
-   - Análise de código
-   - Debugging
+Crie um arquivo `.env`:
+```
+MCP_PROJECT_NAME=seu-projeto
+MCP_GITHUB_TOKEN=seu-token
+```
 
-2. **Artifacts**
-   - Criação de componentes
-   - Visualizações
-   - Documentação
+## 9. Checklist de Instalação
 
-## Melhores Práticas
-
-1. **Organização de Código**
-   - Mantenha componentes em diretórios separados
-   - Use nomenclatura consistente
-   - Documente alterações significativas
-
-2. **Gerenciamento de Estado**
-   - Atualize project-status.json regularmente
-   - Mantenha descrições claras de tarefas
-   - Use sistema de branches para features
-
-3. **Otimização**
-   - Cache de operações frequentes
-   - Batch de operações similares
-   - Limpeza regular de cache
-
-## Solução de Problemas
-
-### Problemas Comuns
-
-1. **Perda de Contexto**
-   - Verifique project-status.json
-   - Recarregue estado manualmente
-   - Verifique logs de erro
-
-2. **Conflitos de Versão**
-   - Resolva conflitos no project-status.json
-   - Mantenha backup do estado
-
-3. **Problemas de Performance**
-   - Limpe cache quando necessário
-   - Otimize operações em batch
-   - Reduza tamanho de contexto
-
-### Suporte
-
-- Abra issues no GitHub para problemas
-- Consulte a documentação atualizada
-- Contribua com melhorias
-
-## Notas Adicionais
-
-1. **Segurança**
-   - Não armazene credenciais no status
-   - Use variáveis de ambiente
-   - Mantenha tokens seguros
-
-2. **Manutenção**
-   - Atualize regularmente
-   - Verifique por novas versões
-   - Contribua com melhorias
-
-3. **Comunidade**
-   - Compartilhe templates úteis
-   - Reporte bugs
-   - Sugira melhorias
+- [ ] Repository forked/clonado
+- [ ] Dependencies instaladas
+- [ ] project-status.json configurado
+- [ ] Estrutura de diretórios verificada
+- [ ] Teste básico realizado
+- [ ] Documentação revisada
 
 ---
 
-*Para mais informações ou suporte, abra uma issue no repositório principal.*
+Continue para a [Parte 2](INSTRUCTIONS_PART2.md) para aprender sobre o uso diário e operações avançadas.
+
+# MCP Continuity Tool - Parte 2: Uso Diário e Recursos Avançados
+
+Esta segunda parte das instruções foca no uso diário e recursos avançados do MCP Continuity Tool.
+
+## 1. Uso Diário
+
+### 1.1 Iniciando uma Sessão
+
+1. **No Chat com Claude**
+   ```
+   Por favor, acesse https://github.com/Lucasdoreac/mcp-continuity-tool e use as instruções para continuidade de desenvolvimento.
+   ```
+
+2. **Fornecendo Informações**
+   - Link do repositório
+   - Branch atual (se necessário)
+   - Contexto específico (opcional)
+
+### 1.2 Durante o Desenvolvimento
+
+1. **Verificação de Estado**
+   ```javascript
+   const status = await checkStatus();
+   console.log('Estado atual:', status);
+   ```
+
+2. **Salvamento de Progresso**
+   ```javascript
+   await saveProgress({
+     type: 'feature',
+     description: 'Implementando novo componente',
+     remainingTasks: ['Testes', 'Documentação']
+   });
+   ```
+
+## 2. Recursos Avançados
+
+### 2.1 Gerenciamento de Contexto
+
+1. **Cache Inteligente**
+   ```javascript
+   // Configurar cache
+   await configureCache({
+     maxSize: '100mb',
+     retention: '7d'
+   });
+
+   // Usar cache
+   const cachedData = await smartCache.get('key');
+   ```
+
+2. **Batch Operations**
+   ```javascript
+   await batchProcess([
+     {type: 'analysis', file: 'component1.js'},
+     {type: 'test', file: 'test1.js'}
+   ]);
+   ```
+
+### 2.2 Integração com Ferramentas MCP
+
+1. **REPL Avançado**
+   - Análise de código em tempo real
+   - Debugging interativo
+   - Execução de testes rápidos
+   ```javascript
+   // Exemplo de uso do REPL
+   const analysis = await repl.analyze('code-sample.js');
+   console.log(analysis.suggestions);
+   ```
+
+2. **Artifacts**
+   - Criação e gestão de componentes
+   - Visualizações dinâmicas
+   - Documentação interativa
+   ```javascript
+   const visualization = await artifacts.create({
+     type: 'chart',
+     data: analysisResults
+   });
+   ```
+
+## 3. Otimização de Performance
+
+### 3.1 Gerenciamento de Memória
+
+1. **Limpeza Automática**
+   ```javascript
+   await memory.autoClean({
+     threshold: '80%',
+     preserveKeys: ['critical-data']
+   });
+   ```
+
+2. **Compressão de Dados**
+   ```javascript
+   const compressed = await compress({
+     data: largeDataset,
+     level: 'high'
+   });
+   ```
+
+### 3.2 Estratégias de Cache
+
+1. **Cache Seletivo**
+   ```javascript
+   await cache.configure({
+     rules: [
+       {pattern: '*.analysis', ttl: '1h'},
+       {pattern: '*.metadata', ttl: '1d'}
+     ]
+   });
+   ```
+
+2. **Pré-carregamento**
+   ```javascript
+   await cache.preload({
+     patterns: ['common-*.js'],
+     priority: 'high'
+   });
+   ```
+
+## 4. Melhores Práticas
+
+### 4.1 Organização de Código
+
+1. **Estrutura de Projeto**
+   ```
+   /seu-projeto
+   ├── /src
+   │   ├── /components
+   │   ├── /analysis
+   │   └── /cache
+   ├── /docs
+   └── project-status.json
+   ```
+
+2. **Convenções de Nomenclatura**
+   - Use prefixos claros
+   - Mantenha consistência
+   - Documente exceções
+
+### 4.2 Gestão de Estado
+
+1. **Backup Automático**
+   ```javascript
+   await state.configureBackup({
+     interval: '30m',
+     locations: ['local', 'remote']
+   });
+   ```
+
+2. **Restauração de Estado**
+   ```javascript
+   await state.restore({
+     point: 'last-stable',
+     validation: true
+   });
+   ```
+
+## 5. Solução de Problemas
+
+### 5.1 Diagnóstico
+
+1. **Logs Detalhados**
+   ```javascript
+   await diagnostics.enableDetailedLogs({
+     level: 'debug',
+     components: ['all']
+   });
+   ```
+
+2. **Análise de Performance**
+   ```javascript
+   const perfReport = await diagnostics.analyzePerformance({
+     duration: '1h',
+     metrics: ['memory', 'cache', 'operations']
+   });
+   ```
+
+### 5.2 Recuperação
+
+1. **Rollback Automático**
+   ```javascript
+   await recovery.rollback({
+     to: 'last-stable-point',
+     verify: true
+   });
+   ```
+
+2. **Reparo de Estado**
+   ```javascript
+   await recovery.repairState({
+     validation: true,
+     backup: true
+   });
+   ```
+
+## 6. Próximos Passos
+
+1. **Explorar Recursos Avançados**
+   - Automação de tarefas
+   - Integração com CI/CD
+   - Análise avançada de código
+
+2. **Contribuir com o Projeto**
+   - Reportar bugs
+   - Sugerir melhorias
+   - Compartilhar templates
+
+## 7. Recursos Adicionais
+
+- Documentação completa no repositório
+- Exemplos práticos em `/examples`
+- Comunidade e suporte no GitHub
+
+---
+
+Para dúvidas ou problemas, abra uma issue no repositório principal.
+
+---
+
+Este documento é gerado automaticamente. Para contribuir, edite os arquivos em docs/INSTRUCTIONS_PART*.md
