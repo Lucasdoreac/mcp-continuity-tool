@@ -29,6 +29,20 @@ Ou usando a variável de ambiente `PORT`:
 PORT=4000 mcp-server
 ```
 
+### Using with NPX
+
+If you prefer not to install the package globally, you can run the server directly using `npx`:
+
+```bash
+npx mcp-continuity-tool
+```
+
+This will download the latest version of the package and run the server. You can also pass arguments like `--port`:
+
+```bash
+npx mcp-continuity-tool --port 4000
+```
+
 ## Server API Endpoints
 
 O servidor MCP expõe os seguintes endpoints HTTP:
@@ -217,6 +231,23 @@ Este projeto utiliza GitHub Actions para automação de tarefas:
 - Combinação automática de arquivos de instruções
 - Verificação de sintaxe e formatação
 - Testes automatizados (Jest)
+
+## Publishing to NPM (For Maintainers)
+
+To publish this package to NPM or update an existing version:
+
+1.  Ensure you are logged into NPM with appropriate permissions:
+    ```bash
+    npm login
+    ```
+2.  Increment the `version` in `package.json` as per Semantic Versioning (e.g., `1.0.1`, `1.1.0`, `2.0.0`).
+3.  Commit your changes to Git.
+4.  Run the publish command:
+    ```bash
+    npm publish
+    ```
+
+This process requires you to be the owner or a collaborator on the `mcp-continuity-tool` package on npmjs.com.
 
 ## 📄 Licença
 
