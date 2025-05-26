@@ -58,8 +58,8 @@ jobs:
         run: |
           echo "Validando arquivos JSON..."
           
-          # Lista todos os arquivos JSON no repositório
-          json_files=$(find . -name "*.json" -type f)
+          # Lista todos os arquivos JSON no repositório, excluindo node_modules
+          json_files=$(find . -path ./node_modules -prune -o -name "*.json" -type f -print)
           
           # Verifica se cada arquivo é um JSON válido
           for file in $json_files; do
@@ -77,8 +77,8 @@ jobs:
         run: |
           echo "Verificando sintaxe de arquivos JavaScript..."
           
-          # Lista todos os arquivos JavaScript no repositório
-          js_files=$(find . -name "*.js" -type f)
+          # Lista todos os arquivos JavaScript no repositório, excluindo node_modules
+          js_files=$(find . -path ./node_modules -prune -o -name "*.js" -type f -print)
           
           # Verifica a sintaxe de cada arquivo JS
           for file in $js_files; do
