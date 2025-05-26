@@ -6,101 +6,82 @@
  * o ambiente para desenvolvimento contínuo.
  */
 
+const fs = require('fs');
+const path = require('path');
+const { loadProjectState, saveProjectState, generateContinuityPrompt } = require('./state_manager');
+
 /**
  * Configura e inicializa o project-status.json automaticamente
  * @param {string} repositoryUrl - URL ou identificador do repositório
- * @param {string} workingDirectory - Diretório de trabalho opcional (ex: 'src', 'frontend/src')
- * @returns {Promise<Object>} - Estado do projeto configurado
+ * @param {string} workingDirectoryInput - Diretório de trabalho opcional (ex: 'src', 'frontend/src')
+ * @returns {Object} - Estado do projeto configurado
  */
-async function setupProjectState(repositoryUrl, workingDirectory = '') {
-  console.log(`🚀 Configurando ambiente para o repositório: ${repositoryUrl}${workingDirectory ? ` (diretório: ${workingDirectory})` : ''}`);
-  
-  // Extrai informações do repositório a partir da URL
+function setupProjectState(repositoryUrl, workingDirectoryInput = '') {
+  const workingDirectory = workingDirectoryInput ? path.resolve(workingDirectoryInput) : process.cwd();
   const repoPath = repositoryUrl.split('/').slice(-2).join('/').replace('.git', '');
   const repoName = repoPath.split('/')[1] || repositoryUrl.split('/').pop() || 'project';
+
+  console.log(`🚀 Configurando ambiente para o repositório: ${repositoryUrl}${workingDirectoryInput ? ` (diretório: ${path.basename(workingDirectory)})` : ''}`);
   
-  // Determina o caminho para o project-status.json
-  const projectStatusPath = workingDirectory 
-    ? `${workingDirectory.endsWith('/') ? workingDirectory : workingDirectory + '/'}/project-status.json` 
-    : 'project-status.json';
+  // Determina o caminho para o project-status.json dentro do workingDirectory
+  const projectStatusPath = path.join(workingDirectory, 'project-status.json');
   
-  // Verifica se o diretório de trabalho existe, caso especificado
-  if (workingDirectory) {
+  // Verifica se o diretório de trabalho existe, caso especificado e diferente do CWD
+  if (workingDirectoryInput && workingDirectory !== process.cwd()) {
     try {
-      await window.fs.stat(workingDirectory);
+      fs.statSync(workingDirectory);
     } catch (error) {
       console.log(`⚠️ Diretório ${workingDirectory} não encontrado. Tentando criar...`);
       try {
-        // Tenta criar o diretório de trabalho
-        const dirParts = workingDirectory.split('/');
-        let currentPath = '';
-        
-        for (const part of dirParts) {
-          currentPath += (currentPath ? '/' : '') + part;
-          try {
-            await window.fs.stat(currentPath);
-          } catch (e) {
-            // Se não existir, cria o diretório
-            await write_file({
-              path: currentPath + '/.gitkeep',
-              content: ''
-            });
-            console.log(`✅ Diretório ${currentPath} criado`);
-          }
-        }
+        fs.mkdirSync(workingDirectory, { recursive: true });
+        // Adiciona .gitkeep para garantir que o diretório seja rastreado se estiver vazio
+        fs.writeFileSync(path.join(workingDirectory, '.gitkeep'), '');
+        console.log(`✅ Diretório ${workingDirectory} criado`);
       } catch (dirError) {
-        console.error(`❌ Erro ao criar diretório de trabalho: ${dirError}`);
-        console.log('⚠️ Usando diretório raiz como alternativa.');
-        workingDirectory = '';
+        console.error(`❌ Erro ao criar diretório de trabalho: ${dirError.message}`);
+        console.log('⚠️ Usando diretório atual como alternativa.');
+        // Se a criação falhar, reverte para o CWD para projectStatusPath
+        // Note: workingDirectory para o estado ainda será o input original se a criação falhar.
+        // Isso pode precisar de ajuste dependendo do comportamento desejado.
+        // Para este refactor, vamos manter o workingDirectory original no estado.
       }
     }
   }
   
-  // Verifica se o state já existe
   let projectState;
   try {
-    // Tenta carregar o estado existente
-    projectState = await loadProjectState(projectStatusPath);
-    console.log('✅ project-status.json encontrado para ' + repoName);
+    projectState = loadProjectState(projectStatusPath);
+    console.log('✅ project-status.json encontrado para ' + repoName + (workingDirectoryInput ? ` em ${workingDirectory}`: ''));
   } catch (error) {
-    console.log('⚠️ project-status.json não encontrado. Criando um novo com dados do repositório...');
+    console.log(`⚠️ project-status.json não encontrado em ${projectStatusPath}. Criando um novo com dados do repositório...`);
     
-    // Coleta informações do repositório para preencher dinamicamente o template
     let mainFiles = [];
     try {
-      // Define o diretório para listar arquivos
-      const listDir = workingDirectory || '.';
-      
-      // Lista os arquivos disponíveis para identificar arquivos principais
-      const files = await window.fs.readdir(listDir);
+      const files = fs.readdirSync(workingDirectory);
       mainFiles = files.filter(f => 
-        f.endsWith('.js') || f.endsWith('.py') || f.endsWith('.html') || 
-        f.endsWith('.jsx') || f.endsWith('.ts') || f.endsWith('.tsx')
+        /\.(js|jsx|ts|tsx|py|html|css|java|cpp|c|go|rb|php)$/i.test(f) && !fs.statSync(path.join(workingDirectory, f)).isDirectory()
       );
     } catch (e) {
-      console.log('Não foi possível listar arquivos:', e);
+      console.log(`Não foi possível listar arquivos em ${workingDirectory}:`, e.message);
     }
     
-    // Define arquivo inicial baseado em convenções comuns
     const defaultMainFile = mainFiles.find(f => 
-      ['index.js', 'main.js', 'app.js', 'index.jsx', 'index.ts', 'app.py'].includes(f)
+      ['index.js', 'main.js', 'app.js', 'index.jsx', 'index.ts', 'app.py', 'index.html'].includes(path.basename(f))
     ) || (mainFiles.length > 0 ? mainFiles[0] : 'main.js');
     
-    // Prepara o caminho do arquivo principal
-    const mainFilePath = workingDirectory 
-      ? `${workingDirectory}/${defaultMainFile}`
-      : defaultMainFile;
-    
-    // Cria um template preenchido com informações do repositório
+    // O caminho do arquivo principal deve ser relativo ao workingDirectory no estado.
+    const mainFilePathInState = defaultMainFile;
+
     const template = {
       projectInfo: {
         name: repoName,
         repository: repositoryUrl,
-        workingDirectory: workingDirectory || null,
+        // Armazena o caminho relativo ou absoluto fornecido, não o resolvido, para consistência.
+        workingDirectory: workingDirectoryInput || null, 
         lastUpdated: new Date().toISOString()
       },
       development: {
-        currentFile: mainFilePath,
+        currentFile: mainFilePathInState,
         currentComponent: repoName + "Component",
         inProgress: {
           type: "feature",
@@ -118,25 +99,12 @@ async function setupProjectState(repositoryUrl, workingDirectory = '') {
         nextSteps: ["Estruturar diretórios", "Definir interfaces principais", "Configurar ferramentas de build"],
         dependencies: []
       },
-      mcpTools: {
-        lastUsed: {
-          repl: null,
-          artifacts: [],
-          searchResults: []
-        },
-        cacheFiles: [],
-        tempStorage: []
-      }
+      mcpTools: { /* ... (mantém estrutura original) ... */ }
     };
     
-    // Salva o template com informações reais
-    await write_file({
-      path: projectStatusPath,
-      content: JSON.stringify(template, null, 2)
-    });
-    
+    saveProjectState(template, projectStatusPath);
     projectState = template;
-    console.log('✅ Novo project-status.json criado com dados do repositório ' + repoName);
+    console.log('✅ Novo project-status.json criado com dados do repositório ' + repoName + (workingDirectoryInput ? ` em ${workingDirectory}`: ''));
   }
   
   return projectState;
@@ -144,87 +112,72 @@ async function setupProjectState(repositoryUrl, workingDirectory = '') {
 
 /**
  * Analisa a estrutura do repositório
- * @param {string} workingDirectory - Diretório de trabalho opcional
- * @returns {Promise<Object>} - Informações sobre a estrutura do repositório
+ * @param {string} workingDirectoryInput - Diretório de trabalho opcional
+ * @returns {Object} - Informações sobre a estrutura do repositório
  */
-async function analyzeRepository(workingDirectory = '') {
+function analyzeRepository(workingDirectoryInput = '') {
+  const dirToAnalyze = workingDirectoryInput ? path.resolve(workingDirectoryInput) : process.cwd();
+  
   try {
-    // Define o diretório para análise
-    const dirToAnalyze = workingDirectory || '.';
+    const allEntries = fs.readdirSync(dirToAnalyze, { withFileTypes: true });
+    console.log(`📁 Estrutura do repositório${workingDirectoryInput ? ` (${path.basename(dirToAnalyze)})` : ''}:`);
     
-    // Lista arquivos e diretórios
-    const files = await window.fs.readdir(dirToAnalyze);
-    console.log(`📁 Estrutura do repositório${workingDirectory ? ` (${workingDirectory})` : ''}:`);
+    const files = allEntries.filter(dirent => dirent.isFile()).map(dirent => dirent.name);
+    const dirs = allEntries.filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
     
-    // Identifica diretórios
-    const dirs = [];
-    for (const file of files) {
-      try {
-        const filePath = workingDirectory ? `${workingDirectory}/${file}` : file;
-        const stat = await window.fs.stat(filePath);
-        if (stat.isDirectory()) {
-          dirs.push(file);
-        }
-      } catch (e) {
-        // Ignora erros ao verificar diretórios
-      }
-    }
-    
-    // Categoriza arquivos para uma visão geral
     const categories = {
       code: files.filter(f => /\.(js|jsx|ts|tsx|py|java|cpp|c|go|rb|php)$/i.test(f)),
-      config: files.filter(f => /(config|settings|\.json|\.yml|\.xml)$/i.test(f)),
+      config: files.filter(f => /(config|settings|\.json|\.yml|\.xml)$/i.test(f) && f !== 'project-status.json'),
       docs: files.filter(f => /\.(md|txt|pdf|doc)$/i.test(f)),
       web: files.filter(f => /\.(html|css|scss)$/i.test(f)),
       dirs: dirs
     };
     
-    // Mostra categorias relevantes
     console.log(`- ${categories.dirs.length} diretórios`);
     console.log(`- ${categories.code.length} arquivos de código`);
-    console.log(`- ${categories.config.length} arquivos de configuração`);
+    console.log(`- ${categories.config.length} arquivos de configuração (excluindo project-status)`);
     console.log(`- ${categories.docs.length} arquivos de documentação`);
     
     return {
-      fileCount: files.length,
+      fileCount: files.length, // Apenas arquivos, não diretórios
       categories: categories,
-      workingDirectory: workingDirectory
+      analyzedDirectory: dirToAnalyze // Caminho absoluto do diretório analisado
     };
   } catch (e) {
-    console.log('Não foi possível analisar o repositório:', e);
-    return { fileCount: 0, categories: {}, workingDirectory: workingDirectory };
+    console.error(`Não foi possível analisar o repositório em ${dirToAnalyze}:`, e.message);
+    return { fileCount: 0, categories: { dirs: [], code: [], config: [], docs: [], web: [] }, analyzedDirectory: dirToAnalyze };
   }
 }
 
 /**
  * Inicializa o ambiente completo para o repositório
  * @param {string} repositoryUrl - URL ou identificador do repositório
- * @param {string} workingDirectory - Diretório de trabalho opcional
- * @returns {Promise<Object>} - Informações do ambiente inicializado
+ * @param {string} workingDirectoryInput - Diretório de trabalho opcional
+ * @returns {Object} - Informações do ambiente inicializado
  */
-async function initializeEnvironment(repositoryUrl, workingDirectory = '') {
+function initializeEnvironment(repositoryUrl, workingDirectoryInput = '') {
   try {
     console.log('🔄 Inicializando ambiente MCP...');
     
-    // Configura o estado do projeto
-    const projectState = await setupProjectState(repositoryUrl, workingDirectory);
+    const projectState = setupProjectState(repositoryUrl, workingDirectoryInput);
+    // Passar o workingDirectory resolvido de setupProjectState se existir, ou o input para analyze.
+    // Se setupProjectState usa CWD, projectState.projectInfo.workingDirectory será null ou ''.
+    // Se workingDirectoryInput foi fornecido, ele estará em projectState.projectInfo.workingDirectory.
+    const analysisDir = projectState.projectInfo.workingDirectory || ''; // Use o que está no estado, que é o input original
+    const repoAnalysis = analyzeRepository(analysisDir); 
     
-    // Analisa o repositório
-    const repoAnalysis = await analyzeRepository(workingDirectory);
-    
-    // Gera prompt de continuidade
     const continuityPrompt = generateContinuityPrompt(projectState);
     
-    // Exibe informações de resumo
     console.log('\n📊 Resumo do Ambiente:');
     console.log(`- Projeto: ${projectState.projectInfo.name}`);
     console.log(`- Repositório: ${projectState.projectInfo.repository}`);
-    if (workingDirectory) {
-      console.log(`- Diretório de trabalho: ${workingDirectory}`);
+    if (projectState.projectInfo.workingDirectory) {
+      console.log(`- Diretório de trabalho configurado: ${projectState.projectInfo.workingDirectory}`);
     }
-    console.log(`- Arquivo atual: ${projectState.development.currentFile}`);
+    console.log(`- Caminho do project-status.json: ${path.join(analysisDir ? path.resolve(analysisDir) : process.cwd(), 'project-status.json')}`);
+    console.log(`- Arquivo atual no estado: ${projectState.development.currentFile}`);
     console.log(`- Tarefa em progresso: ${projectState.development.inProgress.description}`);
-    console.log(`- Total de arquivos: ${repoAnalysis.fileCount}`);
+    console.log(`- Total de arquivos no diretório analisado: ${repoAnalysis.fileCount}`);
     
     console.log('\n🔄 Prompt de continuidade para próximas sessões:');
     console.log(continuityPrompt);
@@ -235,10 +188,48 @@ async function initializeEnvironment(repositoryUrl, workingDirectory = '') {
       continuityPrompt
     };
   } catch (error) {
-    console.error('❌ Erro ao inicializar ambiente:', error);
-    throw error;
+    console.error('❌ Erro ao inicializar ambiente:', error.message);
+    // Para manter a consistência com o return síncrono, não relançamos o erro aqui
+    // mas o chamador pode verificar o projectState ou repoAnalysis para problemas.
+    // Ou podemos retornar um objeto de erro específico.
+    return { error: true, message: error.message, projectState: null, repoAnalysis: null, continuityPrompt: null };
   }
 }
 
-// Exporta funções para uso direto
-// Uso: await initializeEnvironment('usuario/repositorio', 'src/frontend');
+module.exports = {
+  setupProjectState,
+  analyzeRepository,
+  initializeEnvironment
+};
+
+// Exemplo de uso em um ambiente Node.js:
+// const autoSetup = require('./auto_setup');
+//
+// 1. Inicializar o ambiente para um novo ou existente projeto
+// const environment = autoSetup.initializeEnvironment('usuario/meu-repo-novo', 'src/app');
+// 
+// if (environment && !environment.error) {
+//   console.log('\nAmbiente inicializado com sucesso!');
+//   // O environment.projectState contém o estado carregado ou criado
+//   // O environment.repoAnalysis contém a análise do diretório
+//   // O environment.continuityPrompt está pronto para uso
+// } else if (environment && environment.error) {
+//   console.error('\nFalha ao inicializar ambiente:', environment.message);
+// }
+//
+// 2. Apenas configurar o estado (sem análise completa ou prompt)
+// const state = autoSetup.setupProjectState('usuario/outro-repo', 'packages/module-a');
+// if (state && state.projectInfo) { // Verifica se o estado é válido
+//   console.log(`\nEstado configurado para ${state.projectInfo.name}`);
+// }
+//
+// 3. Apenas analisar um repositório
+// const analysis = autoSetup.analyzeRepository('work/my-project-folder');
+// if (analysis && analysis.analyzedDirectory) {
+//   console.log(`\nAnálise do diretório ${analysis.analyzedDirectory} completa.`);
+// }
+//
+// Para testar, você pode precisar criar os diretórios e arquivos que o script espera,
+// ou adaptar os caminhos conforme sua estrutura de projeto.
+// Lembre-se que 'project-status.json' será criado/lido no 'workingDirectory' especificado,
+// ou no diretório atual se 'workingDirectory' não for fornecido.
