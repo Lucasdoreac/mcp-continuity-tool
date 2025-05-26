@@ -1,129 +1,214 @@
 # MCP Continuity Tool
 
-Uma ferramenta abrangente para implementar recursos de servidor Model Context Protocol (MCP), otimizando o gerenciamento de contexto e contagem de tokens em aplicações de IA.
+Uma ferramenta abrangente para implementar recursos de servidor Model Context Protocol (MCP), otimizando o gerenciamento de contexto e contagem de tokens em aplicações de IA. Este projeto fornece um servidor Node.js que expõe uma API para gerenciar o estado do projeto e gerar prompts de continuidade.
 
-## Uso Rápido
+## Installation
 
-Copie e cole este prompt em um novo chat com Claude para começar imediatamente:
+Instale o `mcp-continuity-tool` globalmente usando npm:
 
+```bash
+npm install -g mcp-continuity-tool
 ```
-Use a ferramenta MCP de continuidade para desenvolvimento do repositório: seu-nome/seu-repositorio
+(Observação: Você pode precisar de `sudo` para instalações globais, dependendo da sua configuração do npm.)
 
-```javascript
-const stateManager = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/state_manager.js', { encoding: 'utf8' });
-eval(stateManager);
-const autoSetup = await window.fs.readFile('https://raw.githubusercontent.com/Lucasdoreac/mcp-continuity-tool/main/scripts/auto_setup.js', { encoding: 'utf8' });
-eval(autoSetup);
-const env = await initializeEnvironment("seu-nome/seu-repositorio");
-const projectState = env.projectState;
-```
+## Running the MCP Server
 
-Continue o desenvolvimento a partir do ponto atual.
+Após a instalação, você pode iniciar o servidor MCP usando o seguinte comando:
+
+```bash
+mcp-server
 ```
 
-*Substitua `seu-nome/seu-repositorio` nas duas ocorrências pelo seu repositório.*
+Por padrão, o servidor é executado na porta 3000. Você pode especificar uma porta diferente usando a opção `--port` ou `-p`:
 
-## 🚀 Recursos
+```bash
+mcp-server --port 4000
+```
+Ou usando a variável de ambiente `PORT`:
+```bash
+PORT=4000 mcp-server
+```
 
-- Gerenciamento de contexto contínuo
-- Contagem de tokens otimizada
-- Integração com servidor MCP
-- Atualizações de contexto em tempo real
-- Monitoramento de desempenho
-- Persistência de estado
-- Gerenciamento de artefatos
-- Configuração automática de repositórios
+## Server API Endpoints
 
-## 🛠️ Ferramentas do Servidor
+O servidor MCP expõe os seguintes endpoints HTTP:
 
-### Ferramentas Disponíveis
+### `GET /`
+Retorna uma mensagem de boas-vindas indicando que o servidor está em execução.
 
-1. **Artefatos**
-   - Crie e gerencie partes de conteúdo independentes
-   - Suporte para múltiplos tipos de conteúdo (código, markdown, SVG, etc.)
-   - Controle de versão e atualizações
+*   **Example Request:**
+    ```bash
+    curl http://localhost:3000/
+    ```
+*   **Example Success Response (200 OK):**
+    ```json
+    {
+      "message": "MCP Server is running. Use specific endpoints to interact."
+    }
+    ```
 
-2. **REPL/Ferramenta de Análise**
-   - Ambiente de execução JavaScript
-   - Acesso ao sistema de arquivos
-   - Recursos de análise de dados
-   - Processamento de arquivos CSV e Excel
+### `POST /initialize`
+Inicializa um novo projeto ou configura um existente para continuidade MCP. Este endpoint chama a função `initializeEnvironment` dos scripts locais.
 
-3. **Operações do Sistema de Arquivos**
-   - Operações de leitura/escrita
-   - Gerenciamento de diretórios
-   - Busca e manipulação de arquivos
-   - Operações com múltiplos arquivos
+*   **Request Body (JSON):**
+    *   `repositoryUrl` (string, required): A URL ou identificador do repositório.
+    *   `workingDirectory` (string, optional): O subdiretório dentro do projeto para focar. Se não fornecido, o diretório atual onde o servidor foi iniciado será usado para algumas operações (como análise de repositório, se aplicável), e o `project-status.json` será salvo/lido a partir desse diretório.
+*   **Example Request:**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{
+      "repositoryUrl": "seu-nome/seu-repositorio",
+      "workingDirectory": "src"
+    }' http://localhost:3000/initialize
+    ```
+*   **Example Success Response (200 OK):**
+    ```json
+    {
+      "projectState": {
+        "projectInfo": {
+          "name": "seu-repositorio",
+          "repository": "seu-nome/seu-repositorio",
+          "workingDirectory": "src",
+          "lastUpdated": "2023-10-28T12:00:00.000Z"
+        },
+        "development": {
+          "currentFile": "main.js",
+          "currentComponent": "seu-repositorioComponent",
+          "inProgress": {
+            "type": "feature",
+            "description": "Configuração inicial do projeto seu-repositorio",
+            "remainingTasks": ["Análise de requisitos", "Planejamento da arquitetura"]
+          }
+        },
+        "components": { /* ... */ },
+        "context": { /* ... */ },
+        "mcpTools": { /* ... */ }
+      },
+      "repoAnalysis": {
+        "fileCount": 10,
+        "categories": {
+          "code": ["main.js", "utils.js"],
+          "config": ["package.json"],
+          "docs": ["README.md"],
+          "web": [],
+          "dirs": ["utils"]
+        },
+        "analyzedDirectory": "/path/to/your/project/src"
+      },
+      "continuityPrompt": "Use MCP toolset from https://github.com/Lucasdoreac/mcp-continuity-tool for development continuity:\n\nWorking on: seu-nome/seu-repositorio\nContext: Iniciar o desenvolvimento com foco na arquitetura principal do seu-repositorio\nStatus from project-status.json:\n{\n  \"projectInfo\": {\n    \"name\": \"seu-repositorio\",\n    \"currentTask\": \"Configuração inicial do projeto seu-repositorio\",\n    \"lastState\": \"Iniciar o desenvolvimento com foco na arquitetura principal do seu-repositorio\"\n  },\n  \"development\": {\n    \"currentFile\": \"main.js\",\n    \"inProgress\": \"feature: Configuração inicial do projeto seu-repositorio\"\n  }\n}\n\nContinue development from this state using MCP server tools for context preservation."
+    }
+    ```
+*   **Error Responses:**
+    *   `400 Bad Request`: Se `repositoryUrl` estiver faltando no corpo da requisição ou se o JSON for inválido.
+    *   `500 Internal Server Error`: Se ocorrer um erro durante o processo de inicialização.
 
-4. **GitHub Integration**
-   - Sincronização com repositórios
-   - Controle de versão
-   - Automação de tarefas
-   - Workflows de integração contínua
+### `GET /state`
+Carrega e retorna o estado atual do projeto a partir de um arquivo `project-status.json`.
 
-5. **State Management**
-   - Persistência entre sessões
-   - Restauração de contexto
-   - Tracking de progresso
-   - Templates JSON para estado do projeto
+*   **Query Parameters:**
+    *   `projectPath` (string, optional): O caminho para o arquivo `project-status.json`. Padrão: `project-status.json` no diretório de trabalho do servidor.
+*   **Example Request:**
+    ```bash
+    curl "http://localhost:3000/state?projectPath=src/my-project-status.json"
+    ```
+*   **Example Success Response (200 OK):**
+    ```json
+    {
+      "projectInfo": {
+        "name": "seu-repositorio",
+        "repository": "seu-nome/seu-repositorio",
+        /* ... mais campos ... */
+      },
+      "development": { /* ... */ }
+      /* ... mais seções do estado ... */
+    }
+    ```
+*   **Error Responses:**
+    *   `500 Internal Server Error`: Se o arquivo de estado não puder ser lido ou se ocorrer outro erro. (Nota: se o arquivo não existir, um estado padrão é retornado com status 200).
 
-6. **Configuração Automática**
-   - Detecção automática de arquivos e estrutura
-   - Preenchimento inteligente de metadados
-   - Inicialização com um único prompt
-   - Análise automática de repositórios
+### `POST /state`
+Atualiza campos específicos no estado do projeto e salva o arquivo `project-status.json`.
 
-## 📋 Como Funciona
+*   **Request Body (JSON):**
+    *   `updates` (object, required): Objeto contendo os campos a serem atualizados no estado.
+    *   `projectPath` (string, optional): O caminho para o arquivo `project-status.json`. Padrão: `project-status.json` no diretório de trabalho do servidor.
+*   **Example Request:**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{
+      "updates": {
+        "development": {
+          "currentFile": "new-file.js",
+          "inProgress": { "description": "Trabalhando na nova funcionalidade" }
+        },
+        "context": { "lastThought": "Isso está quase pronto." }
+      },
+      "projectPath": "src/my-project-status.json"
+    }' http://localhost:3000/state
+    ```
+*   **Example Success Response (200 OK):**
+    ```json
+    {
+      "projectInfo": { /* ... */ },
+      "development": {
+        "currentFile": "new-file.js",
+        "inProgress": { "description": "Trabalhando na nova funcionalidade" }
+        /* ... outros campos preservados ou mesclados ... */
+      },
+      "context": { "lastThought": "Isso está quase pronto." },
+      /* ... mais seções do estado ... */
+    }
+    ```
+    (A resposta é o objeto de estado completamente atualizado.)
+*   **Error Responses:**
+    *   `400 Bad Request`: Se `updates` estiver faltando ou se o JSON for inválido.
+    *   `500 Internal Server Error`: Se ocorrer um erro durante a atualização ou salvamento.
 
-### Processo de Uso Padrão
+### `GET /continuity-prompt`
+Gera um prompt de continuidade com base no estado atual do projeto.
 
-1. **Iniciar uma nova sessão**
-   - Cole o [prompt mínimo](docs/MINIMAL_PROMPT.md) em um novo chat
-   - Substitua o nome do repositório
-   - O ambiente será configurado automaticamente
+*   **Query Parameters:**
+    *   `projectPath` (string, optional): O caminho para o arquivo `project-status.json` para carregar o estado. Padrão: `project-status.json`.
+*   **Example Request:**
+    ```bash
+    curl "http://localhost:3000/continuity-prompt?projectPath=src/my-project-status.json"
+    ```
+*   **Example Success Response (200 OK):**
+    ```json
+    {
+      "prompt": "Use MCP toolset from https://github.com/Lucasdoreac/mcp-continuity-tool for development continuity:\n\nWorking on: seu-nome/seu-repositorio\nContext: Isso está quase pronto.\nStatus from project-status.json:\n{\n  \"projectInfo\": {\n    \"name\": \"seu-repositorio\",\n    \"currentTask\": \"Trabalhando na nova funcionalidade\",\n    \"lastState\": \"Isso está quase pronto.\"\n  },\n  \"development\": {\n    \"currentFile\": \"new-file.js\",\n    \"inProgress\": \"feature: Trabalhando na nova funcionalidade\"\n  }\n}\n\nContinue development from this state using MCP server tools for context preservation."
+    }
+    ```
+*   **Error Responses:**
+    *   `500 Internal Server Error`: Se o estado não puder ser carregado ou se ocorrer um erro na geração do prompt.
 
-2. **Durante a sessão**
-   - Trabalhe normalmente no desenvolvimento
-   - O contexto é mantido automaticamente
-   - Use as ferramentas MCP conforme necessário
+## 🚀 Visão Geral dos Recursos (Expostos via API)
 
-3. **Finalizar a sessão**
-   - Atualize o estado com o progresso
-   ```javascript
-   await updateProjectState({
-     development: {
-       currentFile: "arquivo-atual.js",
-       inProgress: {
-         description: "O que você está fazendo agora"
-       }
-     },
-     context: {
-       lastThought: "Seus pensamentos finais",
-       nextSteps: ["Próximo passo 1", "Próximo passo 2"]
-     }
-   });
-   ```
-   - Gere o prompt para a próxima sessão
-   ```javascript
-   const nextSessionPrompt = generateContinuityPrompt(await loadProjectState('project-status.json'));
-   console.log(nextSessionPrompt);
-   ```
+- **Gerenciamento de Estado do Projeto:** Carregue, salve e atualize um arquivo `project-status.json` que rastreia o progresso do desenvolvimento, contexto e metadados do projeto.
+- **Configuração Automática:** Inicialize projetos rapidamente, detectando informações do repositório e configurando um estado inicial.
+- **Geração de Prompt de Continuidade:** Crie prompts formatados para ajudar a manter o contexto entre sessões de desenvolvimento com modelos de IA.
+- **Análise de Repositório:** Obtenha uma visão geral da estrutura de arquivos de um diretório de projeto.
 
-4. **Próxima sessão**
-   - Use o prompt gerado ou o prompt mínimo
+## 📋 Como Funciona (Modelo Servidor-Cliente)
+
+1.  **Inicie o Servidor MCP:** Execute `mcp-server` no seu terminal.
+2.  **Use um Cliente HTTP (como `curl` ou Postman) ou integre com outras ferramentas:**
+    *   Para iniciar um novo projeto ou registrar um existente, envie uma requisição `POST /initialize`. Isso criará um arquivo `project-status.json` (se não existir) e retornará o estado inicial, análise do repositório e um prompt de continuidade.
+    *   Para obter o estado atual de um projeto, envie `GET /state` (especificando `projectPath` se não for o padrão).
+    *   À medida que você trabalha, atualize o estado enviando `POST /state` com as alterações.
+    *   Para gerar um prompt para a próxima sessão ou para resumir o estado atual, use `GET /continuity-prompt`.
+3.  **Integração com Modelos de IA:** Use os prompts gerados e as informações de estado para manter o contexto ao interagir com modelos de linguagem grandes como Claude, ChatGPT, etc.
 
 ## 🤝 Contribuindo
 
-Contribuições são bem-vindas! Veja `docs/INSTRUCTIONS.md` para informações detalhadas sobre como contribuir.
+Contribuições são bem-vindas! Veja `docs/INSTRUCTIONS.md` (a ser atualizado para o novo fluxo) para informações detalhadas sobre como contribuir. Por favor, foque em melhorar a funcionalidade do servidor e dos scripts Node.js.
 
-## 📚 Recursos Adicionais
+## 📚 Recursos Adicionais (Podem precisar de atualização)
 
-- [Prompt Mínimo](docs/MINIMAL_PROMPT.md) - A forma mais rápida e simples de começar
-- [Início Rápido](docs/QUICK_START.md) - Instruções detalhadas para iniciantes
-- [Configuração Automática](docs/AUTO_SETUP.md) - Detalhes técnicos da configuração automática
-- [Documentação Completa](docs/INSTRUCTIONS.md) - Guia completo de todas as funcionalidades
-- [Templates de Prompt](docs/PROMPT_TEMPLATE.md) - Prompts para diferentes situações
-- [Recursos e Referências](docs/RESOURCES.md) - Materiais adicionais
+- [Prompt Mínimo](docs/MINIMAL_PROMPT.md)
+- [Início Rápido](docs/QUICK_START.md)
+- [Configuração Automática](docs/AUTO_SETUP.md)
+- [Documentação Completa](docs/INSTRUCTIONS.md)
+- [Templates de Prompt](docs/PROMPT_TEMPLATE.md)
+- [Recursos e Referências](docs/RESOURCES.md)
 
 ## ⚙️ Automação
 
@@ -131,7 +216,7 @@ Este projeto utiliza GitHub Actions para automação de tarefas:
 
 - Combinação automática de arquivos de instruções
 - Verificação de sintaxe e formatação
-- Testes automatizados
+- Testes automatizados (Jest)
 
 ## 📄 Licença
 

@@ -1,0 +1,4 @@
+node_modules/
+*.log
+project-status.json # Test files should not be committed
+test-project-status.json # Test files should not be committed
