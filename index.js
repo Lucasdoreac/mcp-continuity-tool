@@ -47,13 +47,27 @@ if (finalPort !== DEFAULT_PORT && (finalPort === cliPort || finalPort === parseI
 
 const PORT = finalPort; // Use this PORT variable for the server
 
-// Helper function to send JSON responses
+/**
+ * Sends an HTTP response with the specified status code and JSON-encoded data.
+ *
+ * @param {http.ServerResponse} res - The HTTP response object.
+ * @param {number} statusCode - The HTTP status code to send.
+ * @param {Object} data - The data to be JSON-encoded and sent in the response body.
+ */
 function sendJsonResponse(res, statusCode, data) {
     res.writeHead(statusCode, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
 }
 
-// Helper function to parse JSON body
+/**
+ * Parses the JSON body of an HTTP request and invokes a callback with the result.
+ *
+ * @param {IncomingMessage} req - The HTTP request object to read the body from.
+ * @param {function(Error|null, Object|null):void} callback - Callback invoked with an error or the parsed JSON object.
+ *
+ * @remark
+ * If the request body is not valid JSON or a stream error occurs, the callback is invoked with the corresponding error.
+ */
 function parseJsonBody(req, callback) {
     let body = '';
     req.on('data', chunk => {
