@@ -10,9 +10,12 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Carrega o estado atual do projeto
- * @param {string} projectPath - Caminho para o arquivo project-status.json
- * @returns {Object} - Objeto com o estado do projeto
+ * Loads the current project state from a JSON file.
+ *
+ * Attempts to read and parse the specified project state file. If the file cannot be loaded or parsed, returns a default project state object with predefined structure.
+ *
+ * @param {string} [projectPath='project-status.json'] - Path to the project state JSON file.
+ * @returns {Object} The loaded project state, or a default state object if loading fails.
  */
 function loadProjectState(projectPath = 'project-status.json') {
   try {
@@ -62,10 +65,13 @@ function loadProjectState(projectPath = 'project-status.json') {
 }
 
 /**
- * Salva o estado atual do projeto
- * @param {Object} state - Objeto de estado a ser salvo
- * @param {string} projectPath - Caminho para o arquivo project-status.json
- * @returns {Object} - Resultado da operação
+ * Saves the current project state to a JSON file at the specified path.
+ *
+ * Updates the `lastUpdated` property with the current ISO date before saving.
+ *
+ * @param {Object} state - The project state object to be saved.
+ * @param {string} [projectPath='project-status.json'] - Path to the JSON file where the state will be saved.
+ * @returns {Object} An object indicating success or failure, with a message or error details.
  */
 function saveProjectState(state, projectPath = 'project-status.json') {
   try {
@@ -89,10 +95,11 @@ function saveProjectState(state, projectPath = 'project-status.json') {
 }
 
 /**
- * Atualiza campos específicos no estado do projeto
- * @param {Object} updates - Objeto com os campos a serem atualizados
- * @param {string} projectPath - Caminho para o arquivo project-status.json
- * @returns {Object} - Objeto atualizado de estado
+ * Updates specific fields in the project state by merging the provided updates and saving the result.
+ *
+ * @param {Object} updates - Fields and values to merge into the current project state.
+ * @param {string} [projectPath='project-status.json'] - Path to the project state JSON file.
+ * @returns {Object} The updated project state object, or an error object if the update fails.
  */
 function updateProjectState(updates, projectPath = 'project-status.json') {
   try {
@@ -130,9 +137,12 @@ function updateProjectState(updates, projectPath = 'project-status.json') {
 }
 
 /**
- * Gera um prompt de continuidade baseado no estado atual
- * @param {Object} state - Estado atual do projeto
- * @returns {string} - Prompt formatado para continuidade
+ * Generates a formatted development continuity prompt based on the current project state.
+ *
+ * Returns a string containing repository information, current context, and a simplified project state summary for use with MCP server tools.
+ *
+ * @param {Object} state - The current project state object.
+ * @returns {string} A formatted prompt for development continuity, or a message if the state is unavailable.
  */
 function generateContinuityPrompt(state) {
   if (!state || !state.projectInfo) {

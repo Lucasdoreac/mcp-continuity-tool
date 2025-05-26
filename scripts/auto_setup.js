@@ -11,10 +11,13 @@ const path = require('path');
 const { loadProjectState, saveProjectState, generateContinuityPrompt } = require('./state_manager');
 
 /**
- * Configura e inicializa o project-status.json automaticamente
- * @param {string} repositoryUrl - URL ou identificador do repositório
- * @param {string} workingDirectoryInput - Diretório de trabalho opcional (ex: 'src', 'frontend/src')
- * @returns {Object} - Estado do projeto configurado
+ * Sets up and initializes the `project-status.json` file for a project, creating it with default values if it does not exist.
+ *
+ * Determines the working directory, creates it if necessary (including a `.gitkeep` file for empty directories), and attempts to load the project state from `project-status.json`. If the file is missing, generates a new project state based on the repository and directory contents, identifying a main file or using a default. Returns the resulting project state object.
+ *
+ * @param {string} repositoryUrl - The repository URL or identifier.
+ * @param {string} [workingDirectoryInput] - Optional working directory path (e.g., 'src', 'frontend/src').
+ * @returns {Object} The configured project state.
  */
 function setupProjectState(repositoryUrl, workingDirectoryInput = '') {
   const workingDirectory = workingDirectoryInput ? path.resolve(workingDirectoryInput) : process.cwd();
@@ -111,9 +114,10 @@ function setupProjectState(repositoryUrl, workingDirectoryInput = '') {
 }
 
 /**
- * Analisa a estrutura do repositório
- * @param {string} workingDirectoryInput - Diretório de trabalho opcional
- * @returns {Object} - Informações sobre a estrutura do repositório
+ * Analyzes the structure of a repository directory, categorizing files and directories by type.
+ *
+ * @param {string} [workingDirectoryInput] - Optional path to the directory to analyze. Defaults to the current working directory.
+ * @returns {Object} An object containing the file count, categorized file lists, and the absolute path of the analyzed directory.
  */
 function analyzeRepository(workingDirectoryInput = '') {
   const dirToAnalyze = workingDirectoryInput ? path.resolve(workingDirectoryInput) : process.cwd();
@@ -150,10 +154,13 @@ function analyzeRepository(workingDirectoryInput = '') {
 }
 
 /**
- * Inicializa o ambiente completo para o repositório
- * @param {string} repositoryUrl - URL ou identificador do repositório
- * @param {string} workingDirectoryInput - Diretório de trabalho opcional
- * @returns {Object} - Informações do ambiente inicializado
+ * Initializes the complete development environment for a repository.
+ *
+ * Sets up the project state, analyzes the repository structure, and generates a continuity prompt for future sessions. Returns an object containing the project state, repository analysis, and the continuity prompt. If initialization fails, returns an object with an error flag and message.
+ *
+ * @param {string} repositoryUrl - The repository URL or identifier.
+ * @param {string} [workingDirectoryInput] - Optional working directory path.
+ * @returns {Object} An object with the initialized environment data or an error indicator.
  */
 function initializeEnvironment(repositoryUrl, workingDirectoryInput = '') {
   try {
