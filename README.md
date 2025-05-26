@@ -236,7 +236,7 @@ Este projeto utiliza GitHub Actions para automação de tarefas:
 
 To publish this package to NPM or update an existing version:
 
-1.  Ensure you are logged into NPM with appropriate permissions:
+1.  Ensure you are logged in to NPM with appropriate permissions:
     ```bash
     npm login
     ```
