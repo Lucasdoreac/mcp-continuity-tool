@@ -1,3 +1,5 @@
+> **Arquivado em 2026-10-22.** Substituído por [`Lucasdoreac/personal-dev-harness`](https://github.com/Lucasdoreac/personal-dev-harness) (skill `tiered-delegation`) e [`Lucasdoreac/sober`](https://github.com/Lucasdoreac/sober). Mantido somente para referência histórica.
+
 # MCP Continuity Tool
 
 Uma ferramenta abrangente para implementar recursos de servidor Model Context Protocol (MCP), otimizando o gerenciamento de contexto e contagem de tokens em aplicações de IA. Este projeto fornece um servidor Node.js que expõe uma API para gerenciar o estado do projeto e gerar prompts de continuidade.
